@@ -4,7 +4,7 @@ var fs = require('fs');
 var parse = require('xml-parser');
 var beans = require('./bean.class.js');
 
-class Persistance{
+class Persistence{
 	constructor(confFile){
 		var that = this;
 
@@ -25,7 +25,7 @@ class Persistance{
 			this.mapping.push(file);
 		});
 
-		this.beanThread = setInterval(function(){that.beanHandler(that)}, 1000);
+		this.beanHandlerThread = setInterval(function(){that.beanHandler(that)}, 1000);
 	}
 
 	persist(instance){
@@ -70,13 +70,34 @@ class Persistance{
 		return instance;
 	};
 
-	beanHandler(scope){
-		for(let bean of scope.beans){
+	destroy(instance){
+		var that = this;
+
+		var index = 0;
+		for(let bean of that.beans){
+			if(bean.instance == instance){
+				bean.delete();
+				//console.log(that.beans);
+				that.beans.splice(index, 1);
+				//console.log(that.beans);
+				instance = null;
+			}
+			index++;
+		}
+	}
+
+	beanHandler(persistenceScope){
+		for(let bean of persistenceScope.beans){
 			for(let instVar in bean.instance){
-				if(bean.values[instVar] != bean.instance[instVar]){
-					console.log("dirty bean");
-					bean.values[instVar] = bean.instance[instVar];
-					bean.saveMongo();
+				if(bean.instance == null){
+					bean.delete();
+				}
+				else{
+					if(bean.values[instVar] != bean.instance[instVar]){
+						//console.log("dirty bean");
+						bean.values[instVar] = bean.instance[instVar];
+						bean.save();
+					}
 				}
 			}
 		}
@@ -84,11 +105,17 @@ class Persistance{
 }
 
 module.exports = {
-	Persistance
+	Persistence
 }
 
-var persistance = new Persistance('npl.conf');
-var testInstance = persistance.persist(new Tests.Test(123, "lorem ipsum"));
+/*
+* EXAMPLE
+*/
 
-setTimeout(function(){testInstance.variable1 = 346;}, 3000);
-setTimeout(function(){testInstance.variable1 = 123;}, 6000);
+var persistence = new Persistence('npl.conf');
+var testInstance = persistence.persist(new Tests.Test(123, "lorem ipsum"));
+
+setTimeout(function(){testInstance.variable1 = 346;}, 5000);
+setTimeout(function(){testInstance.variable1 = 123;}, 10000);
+//setTimeout(function(){testInstance = null;}, 15000);
+setTimeout(function(){persistence.destroy(testInstance)}, 15000);

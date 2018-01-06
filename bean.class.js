@@ -8,7 +8,7 @@ class Bean{
 	constructor(instance, vars){
 		//this.mappingFile = mappingFile;
 		this._id = -1;
-		this.instance = instance;
+		this.instance = instance;//Can't be null, otherwise the bean will be deleted by the beanHandlerThread
 		this._className = "";
 		this.vars = vars;
 
@@ -18,27 +18,30 @@ class Bean{
 		}
 	}
 
+	save(){
+		var that = this;
+
+		that.saveMongo();
+	}
+
 	saveMongo(){
 		var that = this;
 
 		// Use connect method to connect to the server
 		MongoClient.connect(url + collectionName, function(err, db) {
-		  console.log("Connected successfully to server");
+		  //console.log("Connected successfully to server");
 
 		  	if(that._id != -1){
 			  that.findMongo(db, function(obj){
 			  	if(obj == null){
-			  		console.log("insert");
 			  		that.insertMongo(db, function(){});
 			  	}
 			  	else{
-			  		console.log("modify");
 			  		that.modifyMongo(db, function(){});
 			  	}
 			  })
 			}
 			else{
-				console.log("insert first time");
 				that.insertMongo(db, function(){});
 			}
 		});
@@ -92,21 +95,32 @@ class Bean{
 			var varValue = that.values[varName];
 			data[varName] = varValue;
 		}
-		console.log(data);
+		//console.log(data);
 
 		collection.updateOne({ '_id' : that._id }, data, function(err, result) {
 			callback(result);
 		});
 	}
 
-	deleteMongo(db, callback){
+	delete(){
 		var that = this;
 
-		// Get the documents collection
-		var collection = db.collection(collectionName);
-		// Delete document where a is 3
-		collection.deleteOne({ '_id': that._id }, function(err, result) {
-			callback(result);
+		that.deleteMongo();
+	}
+
+	deleteMongo(){
+		var that = this;
+
+		// Use connect method to connect to the server
+		MongoClient.connect(url + collectionName, function(err, db) {
+		  	//console.log("Connected successfully to server");
+
+		  	// Get the documents collection
+			var collection = db.collection(collectionName);
+			// Delete document where a is 3
+			collection.deleteOne({ '_id': that._id }, function(err, result) {
+				//callback(result);
+			});
 		});
 	}
 }
