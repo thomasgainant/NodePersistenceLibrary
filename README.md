@@ -3,7 +3,7 @@
 
 Aimed to be usable by a very basic Node.JS environment (ECMA script 2015 compliant). Only MongoDB is supported for the moment but more DBMS must be supported in the future (especially MySQL and Postgre).
 
-Current code is inside the npl.js script, which contains the main class and also an example (a custom class instancing) at the end of this script. The mapping of this class is inside the /mapping folder.
+Current code is inside the npl.js script, which contains the main class. An external example script is also included, with a custom class instancing and its persisting. The mapping of this class is inside the /mapping folder.
 
 You can see that this example create an instance from a custom mapped class, changes one of its attributes after a few seconds, revert this attribute back and then destroys this instance.
 
